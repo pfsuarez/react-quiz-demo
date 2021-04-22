@@ -4,6 +4,9 @@ import { fetchQuizQuestions, Difficulty, QuestionState } from "./API";
 //Components
 import QuestionCard from "./components/QuestionCard";
 
+//Styles
+import { GlobalStyle, Wrapper } from "./App.styles";
+
 export type AnswerObject = {
   question: string;
   answer: string;
@@ -45,7 +48,7 @@ const App = () => {
       const correct = questions[number].correct_answer === answer;
 
       if (correct) {
-        setScore((prev) => prev++);
+        setScore((prev) => prev + 1);
       }
 
       const answerObject: AnswerObject = {
@@ -103,14 +106,17 @@ const App = () => {
     );
 
   return (
-    <div className="App">
-      <h1>React Quiz</h1>
-      {startButtonSection}
-      {scoreSection}
-      {loadingSection}
-      {questionSection}
-      {nextQuestionButton}
-    </div>
+    <>
+      <GlobalStyle />
+      <Wrapper>
+        <h1>React Quiz</h1>
+        {startButtonSection}
+        {scoreSection}
+        {loadingSection}
+        {questionSection}
+        {nextQuestionButton}
+      </Wrapper>
+    </>
   );
 };
 
