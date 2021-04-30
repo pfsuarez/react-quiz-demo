@@ -1,122 +1,104 @@
-import React, { useState } from "react";
-import { fetchQuizQuestions, Difficulty, QuestionState } from "./API";
+import React, { ReactElement, ReactNode, useState } from "react";
 
-//Components
-import QuestionCard from "./components/QuestionCard";
+const HeadingFC: React.FC<{ title: string }> = ({ title }) => <h1>{title}</h1>;
 
-//Styles
-import { GlobalStyle, Wrapper } from "./App.styles";
+//Conventional Props
+function Heading({ title }: { title: string }) {
+  return <h1>{title}</h1>;
+}
 
-export type AnswerObject = {
-  question: string;
-  answer: string;
-  correct: boolean;
-  correctAnswer: string;
+function HeadingWithContent({
+  children,
+}: {
+  children: ReactNode;
+}): ReactElement | null {
+  return <h1>{children}</h1>;
+}
+
+//defaultProps
+const defaultContainerProps = {
+  heading: <strong>My Heading</strong>,
 };
 
-const TOTAL_QUESTIONS = 10;
+type containerProps = {
+  children: ReactNode;
+} & typeof defaultContainerProps;
 
-const App = () => {
-  const [loading, setLoading] = useState(false);
-  const [questions, setQuestions] = useState<QuestionState[]>([]);
-  const [number, setNumber] = useState(0);
-  const [userAnswers, setUserAnswers] = useState<AnswerObject[]>([]);
-  const [score, setScore] = useState(0);
-  const [gameOver, setGameOver] = useState(true);
-
-  const startTrivia = async () => {
-    setLoading(true);
-    setGameOver(false);
-
-    const newQuestions = await fetchQuizQuestions(
-      TOTAL_QUESTIONS,
-      Difficulty.MEDIUM
-    );
-
-    setQuestions(newQuestions);
-    setScore(0);
-    setUserAnswers([]);
-    setNumber(0);
-    setLoading(false);
-  };
-
-  const checkAnswer = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (!gameOver) {
-      //User Answers
-      const answer = e.currentTarget.value;
-
-      const correct = questions[number].correct_answer === answer;
-
-      if (correct) {
-        setScore((prev) => prev + 1);
-      }
-
-      const answerObject: AnswerObject = {
-        question: questions[number].question,
-        answer,
-        correct,
-        correctAnswer: questions[number].correct_answer,
-      };
-
-      setUserAnswers((prev) => [...prev, answerObject]);
-    }
-  };
-
-  const nextQuestion = () => {
-    const nextQuestion = number + 1;
-
-    if (nextQuestion === TOTAL_QUESTIONS) {
-      setGameOver(true);
-    } else {
-      setNumber(nextQuestion);
-    }
-  };
-
-  const startButtonSection =
-    gameOver || userAnswers.length === TOTAL_QUESTIONS ? (
-      <button className="start" onClick={startTrivia}>
-        Start
-      </button>
-    ) : null;
-
-  const scoreSection = !gameOver && !loading && (
-    <p className="score">Score: {score}</p>
+function Container({ heading, children }: containerProps): ReactElement | null {
+  return (
+    <div>
+      <h1>{heading}</h1>
+      {children}
+    </div>
   );
+}
 
-  const loadingSection = loading && <p>Loading Questions...</p>;
-
-  const questionSection = !loading && !gameOver && (
-    <QuestionCard
-      questionNumber={number + 1}
-      totalQuestions={TOTAL_QUESTIONS}
-      question={questions[number].question}
-      answers={questions[number].answers}
-      userAnswer={userAnswers && userAnswers[number]}
-      callback={checkAnswer}
-    />
-  );
-
-  const nextQuestionButton = !loading &&
-    !gameOver &&
-    number !== TOTAL_QUESTIONS - 1 &&
-    userAnswers.length === number + 1 && (
-      <button className="next" onClick={nextQuestion}>
-        Next Question
-      </button>
-    );
+//Functional Props
+function TextWithNumber({
+  header,
+  children,
+}: {
+  header?: (num: number) => ReactNode;
+  children: (num: number) => ReactNode;
+}) {
+  const [state, setstate] = useState<number>(1);
 
   return (
-    <>
-      <GlobalStyle />
-      <Wrapper>
-        <h1>React Quiz</h1>
-        {startButtonSection}
-        {scoreSection}
-        {loadingSection}
-        {questionSection}
-        {nextQuestionButton}
-      </Wrapper>
-    </>
+    <div>
+      {header && <h2>{header?.(state)}</h2>}
+      {children(state)}
+      <div>
+        <button onClick={() => setstate(state + 1)}>Add</button>
+      </div>
+    </div>
+  );
+}
+
+Container.defaultProps = defaultContainerProps;
+
+//List
+function List<ListItem>({
+  items,
+  render,
+}: {
+  items: ListItem[];
+  render: (item: ListItem) => ReactNode;
+}) {
+  return (
+    <ul>
+      {items.map((item, index) => (
+        <li key={index}>{render(item)}</li>
+      ))}
+    </ul>
+  );
+}
+
+//Class component
+class MyHeader extends React.Component<{title: ReactNode | string}> {
+  render() {
+    return (
+      <h1>{this.props.title}</h1>
+    );
+  }
+}
+
+const App = () => {
+  return (
+    <div>
+      <Heading title="Hello There" />
+      <HeadingWithContent>
+        <strong>Hi!</strong>
+      </HeadingWithContent>
+      <Container>Foo</Container>
+      <TextWithNumber header={(num: number) => <span>Header {num}</span>}>
+        {(num: number) => <div>Today's number num is {num}</div>}
+      </TextWithNumber>
+      <List
+        items={["t1", "JK5", "Test"]}
+        render={(item: string) => <div>{item.toLowerCase()}</div>}
+      ></List>
+      <MyHeader title="Another header title"></MyHeader>
+    </div>
   );
 };
 
