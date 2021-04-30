@@ -33,6 +33,8 @@ function Container({ heading, children }: containerProps): ReactElement | null {
   );
 }
 
+Container.defaultProps = defaultContainerProps;
+
 //Functional Props
 function TextWithNumber({
   header,
@@ -53,8 +55,6 @@ function TextWithNumber({
     </div>
   );
 }
-
-Container.defaultProps = defaultContainerProps;
 
 //List
 function List<ListItem>({
